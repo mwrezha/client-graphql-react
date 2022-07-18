@@ -9,30 +9,13 @@ import gql from 'graphql-tag'
 
 
 const cache = new InMemoryCache()
-const link = new HttpLink({ uri: 'https://rickandmortyapi.com/graphql' })
+const link = new HttpLink({
+  uri: 'http://localhost:4000/'
+})
 
 const client = new ApolloClient({
   link,
   cache,
 })
-
-const query = gql`
-    {
-      characters {
-        info {
-          count
-          pages
-        }
-        results {
-          id
-          name
-          type
-          image
-        }
-      }
-    }
-`;
-
-client.query({query}).then(result => console.log('characters', result))
 
 export default client;

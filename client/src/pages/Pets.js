@@ -6,10 +6,24 @@ import NewPetModal from '../components/NewPetModal'
 import Loader from '../components/Loader'
 
 
+const GET_PETS = gql`
+  query getPets {
+    pets {
+      name
+      id
+      type
+      img
+    }
+  }
+`;
 export default function Pets () {
   const [modal, setModal] = useState(false)
+  const {data, loading, error} = useQuery(GET_PETS);
 
+  if (loading) return <Loader />;
+  if (error) return `Error! ${error.message}`;
 
+  console.log('data', data);
   const onSubmit = input => {
     setModal(false)
   }

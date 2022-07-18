@@ -45,7 +45,7 @@ export default function Pets () {
     }
   });
 
-  if (loading || createdPet.loading) return <Loader />;
+  if (loading) return <Loader />;
   if (error || createdPet.error) return `Error! ${error.message} $${createdPet.error.message}`;
 
   const onSubmit = input => {

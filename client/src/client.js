@@ -5,6 +5,18 @@ import { HttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 import gql from 'graphql-tag'
 
+const typeDefs = gql`
+  extend type Pet {
+    vacinated: Boolean!
+  }
+`;
+
+const resolvers = {
+  Pet: {
+    vacinated: () => true
+  }
+};
+
 const delay = setContext(
   request =>
     new Promise((success, fail) => {
@@ -27,6 +39,8 @@ const link = ApolloLink.from([
 const client = new ApolloClient({
   cache,
   link,
+  typeDefs,
+  resolvers
 })
 
 export default client

@@ -13,6 +13,7 @@ const GET_PETS = gql`
       id
       type
       img
+      vacinated @client
     }
   }
 `;
@@ -44,6 +45,8 @@ export default function Pets () {
       })
     }
   });
+
+  console.log('data', data);
 
   if (loading) return <Loader />;
   if (error || createdPet.error) return `Error! ${error.message} $${createdPet.error.message}`;

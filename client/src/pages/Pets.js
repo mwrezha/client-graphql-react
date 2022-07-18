@@ -23,7 +23,6 @@ export default function Pets () {
   if (loading) return <Loader />;
   if (error) return `Error! ${error.message}`;
 
-  console.log('data', data);
   const onSubmit = input => {
     setModal(false)
   }
@@ -46,7 +45,7 @@ export default function Pets () {
         </div>
       </section>
       <section>
-        <PetsList />
+        <PetsList pets={data.pets || []}/>
       </section>
     </div>
   )

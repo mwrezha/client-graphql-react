@@ -16,15 +16,37 @@ const GET_PETS = gql`
     }
   }
 `;
+
+const CREATE_PET = gql`
+  mutation createPet($input: NewPetInput!) {
+    addPet(input: $input) {
+      id
+      type
+      name
+    }
+  }
+`;
+
 export default function Pets () {
   const [modal, setModal] = useState(false)
-  const {data, loading, error} = useQuery(GET_PETS);
+  const {data, loading, error, refetch} = useQuery(GET_PETS);
 
-  if (loading) return <Loader />;
-  if (error) return `Error! ${error.message}`;
+  const [
+    createpet, 
+    createdPet
+  ] = useMutation(CREATE_PET);
+
+  if (loading || createdPet.loading) return <Loader />;
+  if (error || createdPet.error) return `Error! ${error.message} $${createdPet.error.message}`;
 
   const onSubmit = input => {
     setModal(false)
+    createpet({
+      variables: {
+        input: input
+      }
+    });
+    refetch();
   }
   
   if (modal) {

@@ -236,7 +236,7 @@ const client = new ApolloClient({
 
 ```
 
-## Directives Local-only fields in Apollo Client
+## Directives
 
 Configure GraphQL types, fields, and arguments
 

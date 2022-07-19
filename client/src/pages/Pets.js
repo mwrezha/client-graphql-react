@@ -49,8 +49,6 @@ export default function Pets () {
     }
   });
 
-  console.log('data', data);
-
   if (loading) return <Loader />;
   if (error || createdPet.error) return `Error! ${error.message} $${createdPet.error.message}`;
 

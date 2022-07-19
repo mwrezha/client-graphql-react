@@ -12,7 +12,7 @@ queries validated against your Schema.
 
 ### Operation names
 
-> Unique names for your client side Query and Mutation
+Unique names for your client side Query and Mutation
 operations. Used for client side caching, indexing inside of
 tools like GraphQL playground, etc. Like naming your
 functions in JS vs keeping them anonymous.
@@ -43,7 +43,7 @@ query getPets {
 
 ### Variables with operations
 
-> Operations can define arguments, very much like a function in
+Operations can define arguments, very much like a function in
 most programming languages. Those variables can then be
 passed to query / mutation calls inside the operation as
 arguments. Variables are expected to be given at run time

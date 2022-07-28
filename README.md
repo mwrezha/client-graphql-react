@@ -172,26 +172,41 @@ with apollo.
 
 ### Keeping cache in sync
 
-- [Refetch](https://www.apollographql.com/blog/apollo-client/caching/when-to-use-refetch-queries/) matching queries after a mutation
+Apollo Client allows you to make local modifications to your GraphQL data by [updating the cache](https://www.apollographql.com/docs/react/data/mutations/#updating-the-cache-directly), but sometimes it's more straightforward to update your client-side GraphQL data by refetching queries from the server.
+
+- [Refetch](https://www.apollographql.com/blog/apollo-client/caching/when-to-use-refetch-queries/) matching queries after a mutation,
+
+  If you know that your app usually needs to refetch certain queries after a particular mutation, you can include a `refetchQueries` array in that mutation's options:
 
   ```js
     const [
     createpet, 
-    createdPet
+    { data, loading, error }
   ] = useMutation(CREATE_PET, {
     // add this code
-    refetchQueries: [
-      { query: GET_PETS }
-    ]
+    refetchQueries: [ { query: GET_PETS } ], // DocumentNode object parsed with gql
+    'getPets' // Query name
   });
   ```
+  Each element in the `refetchQueries` array is one of the following:
+
+  An object referencing `query` (a `DocumentNode` object parsed with the `gql` function) and `variables`
+  The name of a query you've previously executed, as a string (e.g., `getPets`)
+  To refer to queries by name, make sure each of your app's queries has a unique name.
+  Each included query is executed with its most recently provided set of variables.
+
+  You can provide the `refetchQueries` option either to `useMutation` or to the mutate function. For details, see [Option precedence](https://www.apollographql.com/docs/react/data/mutations/#option-precedence).
 
 - Use update method on mutation
+
+  When a [mutation's response](https://www.apollographql.com/docs/react/data/mutations/#include-modified-objects-in-mutation-responses) is insufficient to update all modified fields in your cache (such as certain list fields), you can define an `update` function to apply manual changes to your cached data after a mutation.
+
+  You provide an `update` function to `useMutation`, like so:
 
   ```js
   const [
     createpet, 
-    createdPet
+    { data, loading, error }
   ] = useMutation(CREATE_PET, {
     // add this code
     update(cache, { data: { addPet } }) {
@@ -203,6 +218,17 @@ with apollo.
     }
   });
   ```
+  As shown, the `update` function is passed a `cache` object that represents the Apollo Client cache. This object provides access to cache API methods like `readQuery`/`writeQuery`, `readFragment`/`writeFragment`, `modify`, and `evict`. These methods enable you to execute GraphQL operations on the cache as though you're interacting with a GraphQL server.
+
+  >Learn more about supported cache functions in [Interacting with cached data](https://www.apollographql.com/docs/react/caching/cache-interaction).
+  
+  The `update` function is _also_ passed an object with a `data` property that contains the result of the mutation. You can use this value to update the cache with `cache.writeQuery`, `cache.writeFragment`, or `cache.modify`.
+
+  When the `CREATE_PET` mutation executes in the above example, the newly added and returned `addPet` object is automatically saved into the cache _before_ the `update` function runs. However, the cached list of `ROOT_QUERY.pets` (which is watched by the `GET_PETS` query) is not automatically updated. This means that the `GET_PETS` query isn't notified of the new `Pet` object, which in turn means that the query doesn't update to show the new item.
+
+  To address this, we use cache.modify to surgically insert or delete items from the cache, by running "modifier" functions. In the example above, we know the results of the `GET_PETS` query are stored in the `ROOT_QUERY.pets` array in the cache, so we use a `pets` modifier function to update the cached array to include a reference to the newly added `Pet`. With the help of `cache.writeFragment`, we get an internal reference to the added `Pet`, then append that reference to the `ROOT_QUERY.pets` array.
+
+  Any changes you make to cached data inside of an `update` function are automatically broadcast to queries that are listening for changes to that data. Consequently, your application's UI will update to reflect these updated cached values.
 
 ## Optimistic UI
 

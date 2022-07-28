@@ -71,12 +71,19 @@ Query variable of `$input`
 }
 ```
 
-## [Apollo React](https://www.apollographql.com/docs/react/get-started)
+## Apollo React
 <!--
 [Apollo Client](https://www.apollographql.com/docs/react/get-started)
 [Apollo Server](https://www.apollographql.com/docs/apollo-server/getting-started)
 -->
-### Query
+
+[Apollo](https://www.apollographql.com/docs/react/get-started) Client is a comprehensive state management library for JavaScript that enables you to manage both local and remote data with GraphQL. Use it to fetch, cache, and modify application data, all while automatically updating your UI.
+
+### Query (Fetch data with the useQuery hook)
+
+The `useQuery` React `hook` is the primary API for executing queries in an Apollo application. To run a query within a React component, call `useQuery` and pass it a GraphQL query string. When your component renders, `useQuery` returns an object from Apollo Client that contains `loading`, `error`, and `data` properties you can use to render your UI.
+
+First, we'll create a GraphQL query named `GET_PETS`. Remember to wrap query strings in the `gql` function to parse them into query documents:
 
 ```js
 const GET_PETS = gql`
@@ -91,16 +98,27 @@ const GET_PETS = gql`
 `;
 ```
 
+we'll pass our `GET_PETS` query to the `useQuery` hook:
+
 ```js
 const {data, loading, error} = useQuery(GET_PETS);
 ```
+
+As our query executes and the values of `loading`, `error`, and `data` change, the component can intelligently render different UI elements according to the query's state:
 
 ```js
 if (loading) return 'Loading...';
 if (error) return `Error! ${error.message}`;
 ```
 
-### Mutations
+- As long as `loading` is `true` (indicating the query is still in flight), the component presents a `Loading...` notice.
+- When `loading` is `false` and there is no `error`, the query has completed. The component renders a `data` returned by the server.
+
+### Mutations (Modify data with the useMutation hook)
+
+The `useMutation` React `hook` is the primary API for executing mutations in an Apollo application. To execute a mutation, you first call `useMutation` within a React component and pass it the mutation you want to execute
+
+First, we'll create a corresponding GraphQL mutation named `CREATE_PET`. Remember to wrap GraphQL strings in the gql function to parse them into query documents:
 
 ```js
 
@@ -116,12 +134,17 @@ const CREATE_PET = gql`
 `;
 ```
 
+Next, we'll create a component named `createpet` that represents the submission form for the to-do list. Inside it, we'll pass our `CREATE_PET` mutation to the `useMutation` hook:
+
 ```js
 const [
   createpet, 
-  createdPet
+  { data, loading, error }
 ] = useMutation(CREATE_PET);
 ```
+
+In this example, our form's `onSubmit` handler calls the mutate function (named `createpet`) that's returned by the `useMutation` hook. This tells Apollo Client to execute the mutation by sending it to our GraphQL server.
+>Note that this behavior differs from `useQuery`, which executes its operation as soon as its component renders. This is because mutations are more commonly executed in response to a user action (such as submitting a form in this case).
 
 ```js
 const onSubmit = input => {

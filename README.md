@@ -230,9 +230,11 @@ Apollo Client allows you to make local modifications to your GraphQL data by [up
 
   Any changes you make to cached data inside of an `update` function are automatically broadcast to queries that are listening for changes to that data. Consequently, your application's UI will update to reflect these updated cached values.
 
-## Optimistic UI
+## Optimistic UI (Update your UI before your server responds)
 
 Optimistic UI is a pattern that you can use to simulate the results of a mutation and update the UI even before receiving a response from the server. Once the response is received from the server, the optimistic result is thrown away and replaced with the actual result.
+
+To enable this optimistic UI behavior, we provide an `optimisticResponse` option to the [mutate function](https://www.apollographql.com/docs/react/data/mutations/#executing-a-mutation) that we use to execute our mutation.
 
 ```js
 createpet({
@@ -254,36 +256,19 @@ createpet({
 });
 ```
 
-```js
-...
-const delay = setContext(
-  request =>
-    new Promise((success, fail) => {
-      setTimeout(() => {
-        success()
-      }, 800)
-    })
-)
+As this example shows, the value of `optimisticResponse` is an object that matches the shape of the mutation response we expect from the server. Importantly, this includes the `Pet`'s `id` and `__typename` fields. The Apollo Client cache uses these values to generate the pet's [unique cache identifier](https://www.apollographql.com/docs/react/caching/cache-configuration/#customizing-cache-ids) (e.g., `Pet:5`).
 
-...
+### Optimistic mutation lifecycle
 
-const http = new HttpLink({
-  uri: 'http://localhost:4000/'
-})
+1. When the code above calls `mutate`, the Apollo Client cache stores a `Pet` object with the field values specified in `optimisticResponse`. However, it does not overwrite the existing cached `Pet` with the same cache identifier. Instead, it stores a separate, optimistic version of the object. This ensures that our cached data remains accurate if our `optimisticResponse` is wrong.
 
-const link = ApolloLink.from([
-  delay,
-  http
-])
+2. Apollo Client notifies all active queries that include the modified Pet. Those queries automatically update, and their associated components re-render to reflect the optimistic data. Because this doesn't require any network requests, it's nearly instantaneous to the user.
 
-...
+3. Eventually, our server responds with the mutation's actual resulting `Pet` object.
 
-const client = new ApolloClient({
-  cache,
-  link,
-})
+4. The Apollo Client cache removes the optimistic version of the `Pet` object. It also overwrites the canonical cached version with values returned from the server.
 
-```
+5. Apollo Client notifies all affected queries again. The associated components re-render, but if the server's response matches our `optimisticResponse`, this is invisible to the user.
 
 ## Directives
 
